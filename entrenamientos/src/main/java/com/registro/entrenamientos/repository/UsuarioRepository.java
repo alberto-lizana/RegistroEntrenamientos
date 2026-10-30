@@ -1,5 +1,6 @@
 package com.registro.entrenamientos.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -28,4 +29,10 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     """)
     Optional<Usuario> buscarUsuarioPorId(@Param("id") Long id);
 
+    @Query
+    ("""
+        SELECT u 
+        FROM Usuario u
+    """)
+    List<Usuario> obtenerTodo();
 }

@@ -15,7 +15,9 @@ import com.registro.entrenamientos.dto.RestablecerPasswordRequestDto;
 import com.registro.entrenamientos.service.AuthService;
 
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController 
 @RequestMapping("/auth")
 public class AuthController  {
@@ -28,18 +30,19 @@ public class AuthController  {
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponseDto> login(@Valid @RequestBody LoginRequestDto request) {
-        AuthResponseDto response = authService.loginUsuario(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        log.info("Solicitud recibida para iniciar sesión");
+        return ResponseEntity.status(HttpStatus.CREATED).body(authService.loginUsuario(request));
     }
 
     @PostMapping("/recuperar")
     public ResponseEntity<CodigoRecuperarResponseDto> recuperarPassword(@Valid @RequestBody RecuperarPasswordRequestDto request) {
-        CodigoRecuperarResponseDto response = authService.recuperarPassword(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        log.info("Solicitud recibida para recuperar contraseña");
+        return ResponseEntity.status(HttpStatus.CREATED).body(authService.recuperarPassword(request));
     }
 
     @PostMapping("/restablecer")
     public ResponseEntity<Void> restablecerPassword(@Valid @RequestBody RestablecerPasswordRequestDto request) {
+        log.info("Solicitud recibida para restablecer contraseña");
         authService.restablecerPassword(request);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }

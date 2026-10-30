@@ -107,21 +107,48 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(auth -> auth
                 // USUARIO
-                .requestMatchers("/usuario/registrar").permitAll()
-                .requestMatchers("/usuario/obtener").authenticated()
-                .requestMatchers("/usuario/modificar-nombre").authenticated()
-                .requestMatchers("/usuario/modificar-appat").authenticated()
-                .requestMatchers("/usuario/modificar-apmat").authenticated()
-                .requestMatchers("/usuario/modificar-fechaNacimiento").authenticated()
-                .requestMatchers("/usuario/modificar-password").authenticated()
-                .requestMatchers("/usuario/modificar-plan").authenticated()
-                .requestMatchers("/usuario/modificar-sexo").authenticated()
-                .requestMatchers(HttpMethod.DELETE, "/usuario/borrado-logico/*").authenticated()
-                .requestMatchers(HttpMethod.DELETE, "/usuario/borrado-fisico/*").authenticated()
+                .requestMatchers("/usuario/registrar").permitAll() // Todos
+                .requestMatchers("/usuario/obtener").authenticated() // Rol usuario
+                .requestMatchers("/usuario/obtener-todos").authenticated() // Rol admin
+                .requestMatchers("/usuario/obtener-{id}").authenticated() // Rol admin
+                .requestMatchers("/usuario/modificar-nombre").authenticated() // Rol usuario y admin
+                .requestMatchers("/usuario/modificar-appat").authenticated() // Rol usuario y admin
+                .requestMatchers("/usuario/modificar-apmat").authenticated() // Rol usuario y admin
+                .requestMatchers("/usuario/modificar-fechaNacimiento").authenticated() // Rol usuario y admin
+                .requestMatchers("/usuario/modificar-password").authenticated() // Rol usuario y admin
+                .requestMatchers("/usuario/modificar-plan").authenticated() // Rol Admin
+                .requestMatchers("/usuario/modificar-sexo").authenticated() // Rol usuario y admin
+                .requestMatchers(HttpMethod.DELETE, "/usuario/borrado-logico/*").authenticated() // Rol Admin
+                .requestMatchers(HttpMethod.DELETE, "/usuario/borrado-fisico/*").authenticated() // Rol Admin
+
                 // AUTH
-                .requestMatchers("/auth/login").permitAll()
-                .requestMatchers("/auth/recuperar").permitAll()
-                .requestMatchers("/auth/restablecer").permitAll()
+                .requestMatchers("/auth/login").permitAll() // Todos
+                .requestMatchers("/auth/recuperar").permitAll() // Todos
+                .requestMatchers("/auth/restablecer").permitAll() // Todos
+
+                // EJERCICIO
+                .requestMatchers("/ejercicio/obtener-todos").authenticated() // Rol Admin
+                .requestMatchers("/ejercicio/obtener-{id}").authenticated() // Rol Admin
+
+                // RUTINA
+                .requestMatchers("/rutina/obtener-todos").authenticated() // Rol usuario y admin
+                .requestMatchers("/rutina/obtener-{id}").authenticated() // Rol usuario y admin
+
+                // DIA RUTINA PRUEBA 
+                .requestMatchers("/rutina/obtener-todos").permitAll() // Rol usuario y admin
+                .requestMatchers("/rutina/obtener-{id}").permitAll() // Rol usuario y admin
+
+                // EJERCICIO RUTINA PRUEBA 
+                .requestMatchers("/ejercicio-rutina/obtener-todos").permitAll() // Rol usuario y admin
+                .requestMatchers("/ejercicio-rutina/del-dia-{id}").permitAll() // Rol usuario y admin
+                .requestMatchers("/ejercicio-rutina/del-diajer-dia-{idDia}-rutina-{idRutina}").permitAll() // Rol usuario y admin
+
+                // RUTINA COMPLETA PRUEBA 
+                .requestMatchers("/rutina-completa/obtener-todas").permitAll() // Rol usuario y admin
+                .requestMatchers("/rutina-completa/obtener-{id}").permitAll() // Rol usuario y admin
+                
+                .requestMatchers("/rutina-completa/obtener-queryNativa-{idRutina}").permitAll() // Rol usuario y admin
+
                 .anyRequest().authenticated()
             )
             .authenticationProvider(authenticationProvider())

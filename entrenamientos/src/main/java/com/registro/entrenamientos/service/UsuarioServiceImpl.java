@@ -1,6 +1,7 @@
 package com.registro.entrenamientos.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,12 +24,16 @@ import com.registro.entrenamientos.exception.CodigoNoEncontradoException;
 import com.registro.entrenamientos.exception.EmailYaExisteException;
 import com.registro.entrenamientos.exception.UsuarioNoEncontradoException;
 import com.registro.entrenamientos.exception.UsuarioNoExisteException;
+import com.registro.entrenamientos.mapper.UsuarioMapper;
 import com.registro.entrenamientos.model.PasswordResetToken;
 import com.registro.entrenamientos.model.Usuario;
 import com.registro.entrenamientos.repository.PasswordResetTokenRepository;
 import com.registro.entrenamientos.repository.UsuarioRepository;
 import com.registro.entrenamientos.security.UsuarioAutenticadoService;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j 
 @Service 
 public class UsuarioServiceImpl implements UsuarioService {
 
@@ -55,13 +60,16 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public UsuarioResponseDto registrarUsuario(RegistrarRequestDto request) {
 
+        log.info("Se inicia el proceso para regitrar un usuario nuevo");
         usuarioRepository.buscarUsuarioPorEmail(request.email())
-                .ifPresent(usuario -> {
-                    throw new EmailYaExisteException("El email ya existe");
-                });
+            .ifPresent(usuario -> {
+                log.warn("El email del postulante a nuevo usuario ya existe");
+                throw new EmailYaExisteException("El email ya existe");
+            });
 
-        Usuario usuarioGuardado = usuarioRepository.save(
-            Usuario
+        log.info("Se crea el nuevo usuario de forma exitosa");
+        return UsuarioMapper.toDto(
+            usuarioRepository.save(Usuario
                 .builder()
                     .nombre(request.nombre())
                     .appat(request.appat())
@@ -72,242 +80,173 @@ public class UsuarioServiceImpl implements UsuarioService {
                     .rol(RolEnum.USUARIO)
                     .sexo(request.sexo())
                 .build()
+            )
         );
-
-        return UsuarioResponseDto
-            .builder()
-                .idUsuario(usuarioGuardado.getId())
-                .nombre(usuarioGuardado.getNombre())
-                .appat(usuarioGuardado.getAppat())
-                .apmat(usuarioGuardado.getApmat())
-                .fechaNacimiento(usuarioGuardado.getFechaNacimiento())
-                .email(usuarioGuardado.getEmail())
-                .plan(usuarioGuardado.getPlan().name())
-                .nombreRol(usuarioGuardado.getRol().name())
-                .sexo(usuarioGuardado.getSexo().name().toLowerCase())
-            .build();
     }
 
     @Transactional(readOnly = true)
     @Override
     public UsuarioResponseDto obtener() {
+        log.info("Se inicia el proceso para obtener la información correspondiente al usuario consultante");
+        return usuarioRepository.buscarUsuarioPorId(usuarioAutenticadoService.obtenerUsuarioIdAutenticado())
+                .map(UsuarioMapper::toDto)
+                    .orElseThrow(() -> {
+                        log.error(
+                            String.format("No se ha encontrado al usuario con el ID: s%",
+                            usuarioAutenticadoService.obtenerUsuarioIdAutenticado())
+                        );
+                        return new UsuarioNoExisteException("Usuario no encontrado");
+                    });
+    }
 
-        Long id = usuarioAutenticadoService.obtenerUsuarioIdAutenticado();
+    @Transactional(readOnly = true)
+    @Override
+    public List<UsuarioResponseDto> obtenerTodos() {
+        log.info("Se inicia el proceso para obtener la información correspondiente a todos los usuario");
+        return usuarioRepository.obtenerTodo()
+            .stream()
+            .map(UsuarioMapper::toDto)
+            .toList();
+    }
 
-        return usuarioRepository.buscarUsuarioPorId(id)
-                .map(usuario -> UsuarioResponseDto
-                    .builder()
-                        .idUsuario(usuario.getId())
-                        .nombre(usuario.getNombre())
-                        .appat(usuario.getAppat())
-                        .apmat(usuario.getApmat())
-                        .fechaNacimiento(usuario.getFechaNacimiento())
-                        .email(usuario.getEmail())
-                        .plan(usuario.getPlan().name())
-                        .nombreRol(usuario.getRol().name())
-                        .sexo(usuario.getSexo().name().toLowerCase())
-                    .build())
-                .orElseThrow(() ->
-                    new UsuarioNoExisteException("Usuario no encontrado"));
+    @Transactional(readOnly = true)
+    @Override
+    public UsuarioResponseDto obtenerPorId(Long id) {
+
+        log.info("Se inicia el proceso para obtener la información correspondiente a un usuario mediante un identificador");
+
+        return UsuarioMapper.toDto(
+            usuarioRepository.buscarUsuarioPorId(id)
+                .orElseThrow(() -> {
+                    log.warn("No se ha encontrado al usuario");
+                    return new UsuarioNoExisteException("No se ha encontrado al usuario");
+                })
+        );
     }
 
     @Transactional
     @Override
     public UsuarioResponseDto modificarNombre(ModificarNombreUsuarioRequestDto dto) {
-        Long id = usuarioAutenticadoService.obtenerUsuarioIdAutenticado();
-
-        Usuario usuario = usuarioRepository.buscarUsuarioPorId(id)
-            .orElseThrow(() -> new UsuarioNoEncontradoException("Usuario no encontrado"));
-
+        
+        log.info("Se inicia el proceso para modificar el nombre al usuario consultante");
+        Usuario usuario = obtenerUsuarioPorId();
+        
+        log.info("Se asigna el nuevo valor");
         usuario.setNombre(dto.nombre());
         
-        Usuario usuarioGuardado = usuarioRepository.save(usuario);
-
-        return UsuarioResponseDto                    
-            .builder()
-                .idUsuario(usuarioGuardado.getId())
-                .nombre(usuarioGuardado.getNombre())
-                .appat(usuarioGuardado.getAppat())
-                .apmat(usuarioGuardado.getApmat())
-                .fechaNacimiento(usuarioGuardado.getFechaNacimiento())
-                .email(usuarioGuardado.getEmail())
-                .plan(usuarioGuardado.getPlan().name())
-                .nombreRol(usuarioGuardado.getRol().name())
-                .sexo(usuarioGuardado.getSexo().name().toLowerCase())
-            .build();
+        return UsuarioMapper.toDto(usuario);
     }
 
     @Transactional
     @Override
     public UsuarioResponseDto modificarAppat(ModificarAppatUsuarioRequestDto dto) {
-        Long id = usuarioAutenticadoService.obtenerUsuarioIdAutenticado();
 
-        Usuario usuario = usuarioRepository.buscarUsuarioPorId(id)
-            .orElseThrow(() -> new UsuarioNoEncontradoException("Usuario no encontrado"));
+        log.info("Se inicia el proceso para modificar el apellido paterno al usuario consultante");
+        Usuario usuario = obtenerUsuarioPorId();
 
+        log.info("Se asigna el nuevo valor");    
         usuario.setAppat(dto.appat());
         
-        Usuario usuarioGuardado = usuarioRepository.save(usuario);
-
-        return UsuarioResponseDto                    
-            .builder()
-                .idUsuario(usuarioGuardado.getId())
-                .nombre(usuarioGuardado.getNombre())
-                .appat(usuarioGuardado.getAppat())
-                .apmat(usuarioGuardado.getApmat())
-                .fechaNacimiento(usuarioGuardado.getFechaNacimiento())
-                .email(usuarioGuardado.getEmail())
-                .plan(usuarioGuardado.getPlan().name())
-                .nombreRol(usuarioGuardado.getRol().name())
-                .sexo(usuarioGuardado.getSexo().name().toLowerCase())
-            .build();
+        return UsuarioMapper.toDto(usuario);
     }
 
     @Transactional
     @Override
     public UsuarioResponseDto modificarApmat(ModificarApmatUsuarioRequestDto dto) {
-        Long id = usuarioAutenticadoService.obtenerUsuarioIdAutenticado();
 
-        Usuario usuario = usuarioRepository.buscarUsuarioPorId(id)
-            .orElseThrow(() -> new UsuarioNoEncontradoException("Usuario no encontrado"));
+        log.info("Se inicia el proceso para modificar el apellido materno al usuario consultante");
+        Usuario usuario = obtenerUsuarioPorId();
 
+        log.info("Se asigna el nuevo valor");
         usuario.setApmat(dto.apmat());
         
-        Usuario usuarioGuardado = usuarioRepository.save(usuario);
-
-        return UsuarioResponseDto                    
-            .builder()
-                .idUsuario(usuarioGuardado.getId())
-                .nombre(usuarioGuardado.getNombre())
-                .appat(usuarioGuardado.getAppat())
-                .apmat(usuarioGuardado.getApmat())
-                .fechaNacimiento(usuarioGuardado.getFechaNacimiento())
-                .email(usuarioGuardado.getEmail())
-                .plan(usuarioGuardado.getPlan().name())
-                .nombreRol(usuarioGuardado.getRol().name())
-                .sexo(usuarioGuardado.getSexo().name().toLowerCase())
-            .build();
+        return UsuarioMapper.toDto(usuario);
     }
 
     @Transactional
     @Override
     public UsuarioResponseDto modificarFechaNacimiento(ModificarFechaNacimientoUsuarioRequestDto dto) {
-        Long id = usuarioAutenticadoService.obtenerUsuarioIdAutenticado();
 
-        Usuario usuario = usuarioRepository.buscarUsuarioPorId(id)
-            .orElseThrow(() -> new UsuarioNoEncontradoException("Usuario no encontrado"));
+        log.info("Se inicia el proceso para modificar la fecha de nacimiento al usuario consultante");
+        Usuario usuario = obtenerUsuarioPorId();
 
+        log.info("Se asigna el nuevo valor");
         usuario.setFechaNacimiento(dto.fechaNacimiento());
         
-        Usuario usuarioGuardado = usuarioRepository.save(usuario);
-
-        return UsuarioResponseDto                    
-            .builder()
-                .idUsuario(usuarioGuardado.getId())
-                .nombre(usuarioGuardado.getNombre())
-                .appat(usuarioGuardado.getAppat())
-                .apmat(usuarioGuardado.getApmat())
-                .fechaNacimiento(usuarioGuardado.getFechaNacimiento())
-                .email(usuarioGuardado.getEmail())
-                .plan(usuarioGuardado.getPlan().name())
-                .nombreRol(usuarioGuardado.getRol().name())
-                .sexo(usuarioGuardado.getSexo().name().toLowerCase())
-            .build();
+        return UsuarioMapper.toDto(usuario);
     }
 
     @Transactional
     @Override
     public UsuarioResponseDto modificarPlan(ModificarPlanUsuarioRequestDto dto) {
-        Long id = usuarioAutenticadoService.obtenerUsuarioIdAutenticado();
 
-        Usuario usuario = usuarioRepository.buscarUsuarioPorId(id)
-            .orElseThrow(() -> new UsuarioNoEncontradoException("Usuario no encontrado"));
+        log.info("Se inicia el proceso para modificar el plan al usuario consultante");
+        Usuario usuario = obtenerUsuarioPorId();
 
+        log.info("Se asigna el nuevo valor");
         usuario.setPlan(dto.plan());
         
-        Usuario usuarioGuardado = usuarioRepository.save(usuario);
-
-        return UsuarioResponseDto                    
-            .builder()
-                .idUsuario(usuarioGuardado.getId())
-                .nombre(usuarioGuardado.getNombre())
-                .appat(usuarioGuardado.getAppat())
-                .apmat(usuarioGuardado.getApmat())
-                .fechaNacimiento(usuarioGuardado.getFechaNacimiento())
-                .email(usuarioGuardado.getEmail())
-                .plan(usuarioGuardado.getPlan().name())
-                .nombreRol(usuarioGuardado.getRol().name())
-                .sexo(usuarioGuardado.getSexo().name().toLowerCase())
-            .build();
+        return UsuarioMapper.toDto(usuario);
     }
 
     @Transactional
     @Override
     public UsuarioResponseDto modificarSexo(ModificarSexoUsuarioRequestDto dto) {
-        Long id = usuarioAutenticadoService.obtenerUsuarioIdAutenticado();
 
-        Usuario usuario = usuarioRepository.buscarUsuarioPorId(id)
-            .orElseThrow(() -> new UsuarioNoEncontradoException("Usuario no encontrado"));
+        log.info("Se inicia el proceso para modificar el sexo al usuario consultante");
+        Usuario usuario = obtenerUsuarioPorId();
 
+        log.info("Se asigna el nuevo valor");
         usuario.setSexo(dto.sexo());
-        
-        Usuario usuarioGuardado = usuarioRepository.save(usuario);
 
-        return UsuarioResponseDto                    
-            .builder()
-                .idUsuario(usuarioGuardado.getId())
-                .nombre(usuarioGuardado.getNombre())
-                .appat(usuarioGuardado.getAppat())
-                .apmat(usuarioGuardado.getApmat())
-                .fechaNacimiento(usuarioGuardado.getFechaNacimiento())
-                .email(usuarioGuardado.getEmail())
-                .plan(usuarioGuardado.getPlan().name())
-                .nombreRol(usuarioGuardado.getRol().name())
-                .sexo(usuarioGuardado.getSexo().name().toLowerCase())
-            .build();
+        return UsuarioMapper.toDto(usuario);
     }
 
     @Transactional 
     @Override
     public UsuarioResponseDto modificarPassword(ModificarPasswordUsuarioRequestDto dto) {
+
+        log.info("Se inicia el proceso de modificación de contraseña del usuario autenticado");
+
+        log.debug("Se obtiene el identificador del usuario autenticado");
         Long id = usuarioAutenticadoService.obtenerUsuarioIdAutenticado();
-
+        
+        log.info("Se busca el código de recuperación asociado al usuario");
         PasswordResetToken codigoCambioContrasenna = passwordResetTokenRepository.encontrarCodigoPorIdUsuario(id)
-            .orElseThrow(() -> new CodigoNoEncontradoException("Codigo no encontrado asociado al usuario"));
-            
-        Usuario usuario = usuarioRepository.buscarUsuarioPorId(id)
-            .orElseThrow(() -> new UsuarioNoEncontradoException("Usuario no encontrado"));
+            .orElseThrow(() -> {
+                log.warn("No se encontró un código de recuperación asociado al usuario");
+                return new CodigoNoEncontradoException("Codigo no encontrado asociado al usuario");
+            });
 
+        log.info("Se obtiene la información del usuario");
+        Usuario usuario = obtenerUsuarioPorId();
+
+        log.info("Se verifica la validez del código de recuperación");
         if (!codigoCambioContrasenna.getToken().equals(dto.codigo())) {
+            log.warn("El código de recuperación proporcionado no es válido");
             throw new CodigoInvalidoException("Código inválido");
         }
 
+        log.info("Se verifica la vigencia del código de recuperación");
         if (codigoCambioContrasenna.getExpiracion().isBefore(LocalDateTime.now())) {
+            log.warn("El código de recuperación proporcionado ha expirado");
             throw new CodigoExpiradoException("Código expirado");
         }
 
+        log.info("Se verifica que ambas contraseñas coincidan");
         if (!dto.password().equals(dto.rPassword())) {
+            log.warn("La modificación de contraseña fue rechazada porque las contraseñas no coinciden");
             throw new IllegalArgumentException("Las contraseñas no coinciden");
         }
 
+        log.info("Se codifica y asigna la nueva contraseña al usuario");
         usuario.setPassword(passwordEncoder.encode(dto.password()));
         
-        Usuario usuarioGuardado = usuarioRepository.save(usuario);
-
+        log.info("Se elimina el código de recuperación utilizado");
         passwordResetTokenRepository.delete(codigoCambioContrasenna);
 
-        return UsuarioResponseDto                    
-            .builder()
-                .idUsuario(usuarioGuardado.getId())
-                .nombre(usuarioGuardado.getNombre())
-                .appat(usuarioGuardado.getAppat())
-                .apmat(usuarioGuardado.getApmat())
-                .fechaNacimiento(usuarioGuardado.getFechaNacimiento())
-                .email(usuarioGuardado.getEmail())
-                .plan(usuarioGuardado.getPlan().name())
-                .nombreRol(usuarioGuardado.getRol().name())
-                .sexo(usuarioGuardado.getSexo().name().toLowerCase())
-            .build();
+        log.info("Se finaliza correctamente el proceso de modificación de contraseña");
+        return UsuarioMapper.toDto(usuario);
     }
 
     @Transactional 
@@ -319,7 +258,6 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         usuario.setIsActive(false);
         
-        usuarioRepository.save(usuario);
     }
 
     @Transactional
@@ -333,4 +271,13 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         usuarioRepository.deleteById(id);
     }
+
+    private Usuario obtenerUsuarioPorId(){
+        return usuarioRepository.buscarUsuarioPorId(usuarioAutenticadoService.obtenerUsuarioIdAutenticado())
+            .orElseThrow(() -> {
+                log.warn("No se logró identificar al usuario consultante");
+                return new UsuarioNoEncontradoException("Usuario no encontrado");
+            });
+    }
+
 }

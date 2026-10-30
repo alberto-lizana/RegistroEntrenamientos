@@ -17,7 +17,8 @@ import jakarta.servlet.http.HttpServletResponse;
 /*
     Extrae el Token e intenta autenticar la petición
 
-    OncePerRequestFilter: hereda de GenericFilterBean y GenericFilterBean implementa diferentes interfaces como: Filter, BeanNameAware, EnvironmentAware, EnvironmentCapable, ServletContextAware, InitializingBean, DisposableBean
+    OncePerRequestFilter: hereda de GenericFilterBean y GenericFilterBean implementa diferentes interfaces como: Filter, 
+    BeanNameAware, EnvironmentAware, EnvironmentCapable, ServletContextAware, InitializingBean, DisposableBean
         Es una clase de Spring Web que facilita ejecutar un filtro una vez por petición dentro de su despacho normal. 
         Es útil para comprobar el JWT antes de que la petición llegue al controlador.
     

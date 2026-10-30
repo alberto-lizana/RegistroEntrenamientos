@@ -1,5 +1,7 @@
 package com.registro.entrenamientos.service;
 
+import java.util.List;
+
 import com.registro.entrenamientos.dto.ModificarApmatUsuarioRequestDto;
 import com.registro.entrenamientos.dto.ModificarAppatUsuarioRequestDto;
 import com.registro.entrenamientos.dto.ModificarFechaNacimientoUsuarioRequestDto;
@@ -15,6 +17,10 @@ public interface UsuarioService {
     UsuarioResponseDto registrarUsuario(RegistrarRequestDto request);
 
     UsuarioResponseDto obtener();
+
+    List<UsuarioResponseDto> obtenerTodos();
+
+    UsuarioResponseDto obtenerPorId(Long id);
 
     UsuarioResponseDto modificarNombre(ModificarNombreUsuarioRequestDto dto);
 
