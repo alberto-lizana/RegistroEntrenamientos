@@ -14,6 +14,7 @@ public class UsuarioMapper {
                 .apmat(usuario.getApmat())
                 .fechaNacimiento(usuario.getFechaNacimiento())
                 .email(usuario.getEmail())
+                .isActive(usuario.getIsActive())
                 .plan(usuario.getPlan().name())
                 .nombreRol(usuario.getRol().name())
                 .sexo(usuario.getSexo().name().toLowerCase())

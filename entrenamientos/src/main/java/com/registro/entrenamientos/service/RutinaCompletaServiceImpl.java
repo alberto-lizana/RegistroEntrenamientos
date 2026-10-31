@@ -51,16 +51,16 @@ public class RutinaCompletaServiceImpl implements RutinaCompletaService {
 
         try {
             log.info("1. Proyección obtenida");
-            log.info("3. Llegamos antes de leer el CLOB");
+            log.info("2. Llegamos antes de leer el CLOB");
 
             String json = resultado.getEjercicios().getSubString(1,(int) resultado.getEjercicios().length());
 
-            log.info("4. JSON RECIBIDO: " + json);
+            log.info("3. JSON RECIBIDO: " + json);
 
             List<EjercicioRutinaNativaResponseDto> ejercicios =
                 objectMapper.readValue(json, new TypeReference<List<EjercicioRutinaNativaResponseDto>>() {});
 
-            log.info("5. JSON convertido correctamente");
+            log.info("4. JSON convertido correctamente");
 
             return RutinaCompletaNativaResponseDto.builder()
                 .rutinaTitulo(resultado.getRutinaTitulo())

@@ -1,6 +1,7 @@
 package com.registro.entrenamientos.model;
 
 import com.registro.entrenamientos.enums.RolEnum;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.registro.entrenamientos.enums.PlanEnum;
 import com.registro.entrenamientos.enums.SexoEnum;
 
@@ -53,6 +54,7 @@ public class Usuario {
     @Column(unique = true, nullable = false)
     private String email;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(nullable = false)
     private String password;
 

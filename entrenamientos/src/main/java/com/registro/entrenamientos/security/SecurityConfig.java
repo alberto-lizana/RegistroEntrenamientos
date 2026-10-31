@@ -107,36 +107,36 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(auth -> auth
                 // USUARIO
-                .requestMatchers("/usuario/registrar").permitAll() // Todos
-                .requestMatchers("/usuario/obtener").authenticated() // Rol usuario
-                .requestMatchers("/usuario/obtener-todos").authenticated() // Rol admin
-                .requestMatchers("/usuario/obtener-{id}").authenticated() // Rol admin
-                .requestMatchers("/usuario/modificar-nombre").authenticated() // Rol usuario y admin
-                .requestMatchers("/usuario/modificar-appat").authenticated() // Rol usuario y admin
-                .requestMatchers("/usuario/modificar-apmat").authenticated() // Rol usuario y admin
-                .requestMatchers("/usuario/modificar-fechaNacimiento").authenticated() // Rol usuario y admin
-                .requestMatchers("/usuario/modificar-password").authenticated() // Rol usuario y admin
-                .requestMatchers("/usuario/modificar-plan").authenticated() // Rol Admin
-                .requestMatchers("/usuario/modificar-sexo").authenticated() // Rol usuario y admin
-                .requestMatchers(HttpMethod.DELETE, "/usuario/borrado-logico/*").authenticated() // Rol Admin
-                .requestMatchers(HttpMethod.DELETE, "/usuario/borrado-fisico/*").authenticated() // Rol Admin
+                .requestMatchers("/usuario/registrar").permitAll()                           
+                .requestMatchers("/usuario/obtener").hasAnyRole("USUARIO", "ADMIN")                     
+                .requestMatchers("/usuario/obtener-todos").hasRole("ADMIN")                  
+                .requestMatchers("/usuario/obtener-{id}").hasRole("ADMIN")                  
+                .requestMatchers("/usuario/modificar-nombre").hasAnyRole("ADMIN", "USUARIO") 
+                .requestMatchers("/usuario/modificar-appat").hasAnyRole("ADMIN", "USUARIO") 
+                .requestMatchers("/usuario/modificar-apmat").hasAnyRole("ADMIN", "USUARIO") 
+                .requestMatchers("/usuario/modificar-fechaNacimiento").hasAnyRole("ADMIN", "USUARIO") 
+                .requestMatchers("/usuario/modificar-password").hasAnyRole("ADMIN", "USUARIO") 
+                .requestMatchers("/usuario/modificar-plan").hasRole("ADMIN") 
+                .requestMatchers("/usuario/modificar-sexo").hasAnyRole("ADMIN", "USUARIO") 
+                .requestMatchers(HttpMethod.DELETE, "/usuario/borrado-logico/*").hasRole("ADMIN") 
+                .requestMatchers(HttpMethod.DELETE, "/usuario/borrado-fisico/*").hasRole("ADMIN") 
 
                 // AUTH
-                .requestMatchers("/auth/login").permitAll() // Todos
-                .requestMatchers("/auth/recuperar").permitAll() // Todos
-                .requestMatchers("/auth/restablecer").permitAll() // Todos
+                .requestMatchers("/auth/login").permitAll()
+                .requestMatchers("/auth/recuperar").permitAll()
+                .requestMatchers("/auth/restablecer").permitAll()
 
                 // EJERCICIO
-                .requestMatchers("/ejercicio/obtener-todos").authenticated() // Rol Admin
-                .requestMatchers("/ejercicio/obtener-{id}").authenticated() // Rol Admin
+                .requestMatchers("/ejercicio/obtener-todos").hasRole("ADMIN")  
+                .requestMatchers("/ejercicio/obtener-{id}").hasRole("ADMIN") 
 
                 // RUTINA
-                .requestMatchers("/rutina/obtener-todos").authenticated() // Rol usuario y admin
-                .requestMatchers("/rutina/obtener-{id}").authenticated() // Rol usuario y admin
+                .requestMatchers("/rutina/obtener-todos").hasAnyRole("ADMIN", "USUARIO") 
+                .requestMatchers("/rutina/obtener-{id}").hasAnyRole("ADMIN", "USUARIO") 
 
                 // DIA RUTINA PRUEBA 
-                .requestMatchers("/rutina/obtener-todos").permitAll() // Rol usuario y admin
-                .requestMatchers("/rutina/obtener-{id}").permitAll() // Rol usuario y admin
+                .requestMatchers("/rutina/obtener-todos").hasAnyRole("ADMIN", "USUARIO") 
+                .requestMatchers("/rutina/obtener-{id}").hasAnyRole("ADMIN", "USUARIO") 
 
                 // EJERCICIO RUTINA PRUEBA 
                 .requestMatchers("/ejercicio-rutina/obtener-todos").permitAll() // Rol usuario y admin

@@ -13,6 +13,8 @@ import com.registro.entrenamientos.model.Usuario;
 @Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
+    boolean existsByEmail(String email);
+
     @Query
     ("""
         SELECT u 
