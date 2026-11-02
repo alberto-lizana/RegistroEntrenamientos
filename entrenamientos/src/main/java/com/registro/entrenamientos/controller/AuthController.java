@@ -31,7 +31,7 @@ public class AuthController  {
     @PostMapping("/login")
     public ResponseEntity<AuthResponseDto> login(@Valid @RequestBody LoginRequestDto request) {
         log.info("Solicitud recibida para iniciar sesión");
-        return ResponseEntity.status(HttpStatus.CREATED).body(authService.loginUsuario(request));
+        return ResponseEntity.ok().body(authService.loginUsuario(request));
     }
 
     @PostMapping("/recuperar")

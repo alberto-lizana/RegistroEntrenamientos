@@ -17,8 +17,8 @@ public interface DiaRutinaRepository extends JpaRepository<DiaRutina, Long> {
     ("""
         SELECT dr 
         FROM DiaRutina dr 
-        LEFT JOIN FETCH Rutina r
-        LEFT JOIN FETCH TipoRutina tr
+        LEFT JOIN FETCH dr.rutina
+        LEFT JOIN FETCH dr.rutina.tipoRutina
     """)
     List<DiaRutina> obtenerTodos();
 
@@ -26,8 +26,8 @@ public interface DiaRutinaRepository extends JpaRepository<DiaRutina, Long> {
     ("""
         SELECT dr 
         FROM DiaRutina dr 
-        LEFT JOIN FETCH Rutina r
-        LEFT JOIN FETCH TipoRutina tr
+        LEFT JOIN FETCH dr.rutina
+        LEFT JOIN FETCH dr.rutina.tipoRutina
         WHERE dr.id = :idDiaRutina
     """)
     Optional<DiaRutina> obtenerPorId(@Param("idDiaRutina") Long idDiaRutina);
