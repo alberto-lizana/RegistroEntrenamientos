@@ -1,8 +1,9 @@
 package com.registro.entrenamientos.service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import com.registro.entrenamientos.dto.ModificarFechaNacimientoUsuarioRequestDto
 import com.registro.entrenamientos.dto.ModificarNombreUsuarioRequestDto;
 import com.registro.entrenamientos.dto.ModificarPasswordUsuarioRequestDto;
 import com.registro.entrenamientos.dto.ModificarPlanUsuarioRequestDto;
+import com.registro.entrenamientos.dto.ModificarRolUsuarioRequestDto;
 import com.registro.entrenamientos.dto.ModificarSexoUsuarioRequestDto;
 import com.registro.entrenamientos.dto.RegistrarRequestDto;
 import com.registro.entrenamientos.dto.UsuarioResponseDto;
@@ -99,14 +101,13 @@ public class UsuarioServiceImpl implements UsuarioService {
                     });
     }
 
-    @Transactional(readOnly = true)
     @Override
-    public List<UsuarioResponseDto> obtenerTodos() {
-        log.info("Se inicia el proceso para obtener la información correspondiente a todos los usuario");
-        return usuarioRepository.obtenerTodo()
-            .stream()
-            .map(UsuarioMapper::toDto)
-            .toList();
+    @Transactional(readOnly = true)
+    public Page<UsuarioResponseDto> obtenerTodos(Pageable pageable) {
+
+        log.info("Se inicia la obtención paginada de usuarios");
+
+        return usuarioRepository.findAll(pageable).map(UsuarioMapper::toDto);
     }
 
     @Transactional(readOnly = true)
@@ -178,14 +179,27 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Transactional
     @Override
-    public UsuarioResponseDto modificarPlan(ModificarPlanUsuarioRequestDto dto) {
+    public UsuarioResponseDto modificarRolPorId(ModificarRolUsuarioRequestDto dto) {
 
-        log.info("Se inicia el proceso para modificar el plan al usuario consultante");
-        Usuario usuario = obtenerUsuarioPorId();
+        if (dto.idUsuario().equals(usuarioAutenticadoService.obtenerUsuarioIdAutenticado())) {
+            throw new IllegalArgumentException("No puedes cambiar tu propio rol");
+        }
 
-        log.info("Se asigna el nuevo valor");
+        Usuario usuario = usuarioRepository.buscarUsuarioPorId(dto.idUsuario())
+            .orElseThrow(() -> new UsuarioNoEncontradoException("Usuario no encontrado"));
+
+        usuario.setRol(dto.rol());
+        return UsuarioMapper.toDto(usuario);
+    }
+
+    @Transactional
+    @Override
+    public UsuarioResponseDto modificarPlanPorId(ModificarPlanUsuarioRequestDto dto) {
+
+        Usuario usuario = usuarioRepository.buscarUsuarioPorId(dto.idUsuario())
+            .orElseThrow(() -> new UsuarioNoEncontradoException("Usuario no encontrado"));
+
         usuario.setPlan(dto.plan());
-        
         return UsuarioMapper.toDto(usuario);
     }
 
@@ -280,4 +294,16 @@ public class UsuarioServiceImpl implements UsuarioService {
             });
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public UsuarioResponseDto obtenerPorEmail(String email) {
+
+        return UsuarioMapper.toDto(
+            usuarioRepository.buscarUsuarioPorEmail(email).orElseThrow(() -> {
+                    return new UsuarioNoExisteException("No se ha encontrado al usuario");
+                })
+        );
+    }
+
 }
+

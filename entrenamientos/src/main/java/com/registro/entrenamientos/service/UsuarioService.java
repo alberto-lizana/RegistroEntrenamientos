@@ -1,6 +1,7 @@
 package com.registro.entrenamientos.service;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import com.registro.entrenamientos.dto.ModificarApmatUsuarioRequestDto;
 import com.registro.entrenamientos.dto.ModificarAppatUsuarioRequestDto;
@@ -8,6 +9,7 @@ import com.registro.entrenamientos.dto.ModificarFechaNacimientoUsuarioRequestDto
 import com.registro.entrenamientos.dto.ModificarNombreUsuarioRequestDto;
 import com.registro.entrenamientos.dto.ModificarPasswordUsuarioRequestDto;
 import com.registro.entrenamientos.dto.ModificarPlanUsuarioRequestDto;
+import com.registro.entrenamientos.dto.ModificarRolUsuarioRequestDto;
 import com.registro.entrenamientos.dto.ModificarSexoUsuarioRequestDto;
 import com.registro.entrenamientos.dto.RegistrarRequestDto;
 import com.registro.entrenamientos.dto.UsuarioResponseDto;
@@ -18,9 +20,11 @@ public interface UsuarioService {
 
     UsuarioResponseDto obtener();
 
-    List<UsuarioResponseDto> obtenerTodos();
+    Page<UsuarioResponseDto> obtenerTodos(Pageable pageable);
 
     UsuarioResponseDto obtenerPorId(Long id);
+
+    UsuarioResponseDto obtenerPorEmail(String request);
 
     UsuarioResponseDto modificarNombre(ModificarNombreUsuarioRequestDto dto);
 
@@ -32,7 +36,9 @@ public interface UsuarioService {
 
     UsuarioResponseDto modificarPassword(ModificarPasswordUsuarioRequestDto dto);
 
-    UsuarioResponseDto modificarPlan(ModificarPlanUsuarioRequestDto dto);
+    UsuarioResponseDto modificarRolPorId(ModificarRolUsuarioRequestDto dto);
+
+    UsuarioResponseDto modificarPlanPorId(ModificarPlanUsuarioRequestDto dto);
     
     UsuarioResponseDto modificarSexo(ModificarSexoUsuarioRequestDto dto);
 

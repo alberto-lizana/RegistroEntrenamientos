@@ -1,4 +1,5 @@
 package com.registro.entrenamientos.security;
+import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,6 +14,10 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 /*
 
@@ -105,18 +110,21 @@ public class SecurityConfig {
             .sessionManagement(sm ->
                 sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
                 // USUARIO
                 .requestMatchers("/usuario/registrar").permitAll()                           
                 .requestMatchers("/usuario/obtener").hasAnyRole("USUARIO", "ADMIN")                     
                 .requestMatchers("/usuario/obtener-todos").hasRole("ADMIN")                  
-                .requestMatchers("/usuario/obtener-{id}").hasRole("ADMIN")                  
+                .requestMatchers("/usuario/obtener-{id}").hasRole("ADMIN")        
+                .requestMatchers("/usuario/obtener-por-email").hasRole("ADMIN")            
                 .requestMatchers("/usuario/modificar-nombre").hasAnyRole("ADMIN", "USUARIO") 
                 .requestMatchers("/usuario/modificar-appat").hasAnyRole("ADMIN", "USUARIO") 
                 .requestMatchers("/usuario/modificar-apmat").hasAnyRole("ADMIN", "USUARIO") 
                 .requestMatchers("/usuario/modificar-fechaNacimiento").hasAnyRole("ADMIN", "USUARIO") 
                 .requestMatchers("/usuario/modificar-password").hasAnyRole("ADMIN", "USUARIO") 
                 .requestMatchers("/usuario/modificar-plan").hasRole("ADMIN") 
+                .requestMatchers("/usuario/modificar-rol").hasRole("ADMIN") 
                 .requestMatchers("/usuario/modificar-sexo").hasAnyRole("ADMIN", "USUARIO") 
                 .requestMatchers(HttpMethod.DELETE, "/usuario/borrado-logico/*").hasRole("ADMIN") 
                 .requestMatchers(HttpMethod.DELETE, "/usuario/borrado-fisico/*").hasRole("ADMIN") 
@@ -188,5 +196,37 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
 
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        // 1. Orígenes autorizados
+        configuration.setAllowedOrigins(
+            List.of("http://localhost:4200")
+        );
+
+        // 2. Métodos HTTP permitidos
+        configuration.setAllowedMethods(
+            List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
+        );
+
+        // 3. Encabezados HTTP permitidos
+        configuration.setAllowedHeaders(
+            List.of("Content-Type", "Authorization")
+        );
+
+        // 4. No utilizamos autenticación mediante cookies
+        configuration.setAllowCredentials(false);
+
+        // 5. Duración de la autorización preflight
+        configuration.setMaxAge(3600L);
+
+        UrlBasedCorsConfigurationSource source =
+            new UrlBasedCorsConfigurationSource();
+
+        source.registerCorsConfiguration("/**", configuration);
+
+        return source;
+    }
 }

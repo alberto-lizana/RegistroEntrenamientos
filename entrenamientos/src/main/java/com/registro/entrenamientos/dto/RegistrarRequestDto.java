@@ -2,7 +2,6 @@ package com.registro.entrenamientos.dto;
 
 import java.time.LocalDate;
 
-import com.registro.entrenamientos.enums.RolEnum;
 import com.registro.entrenamientos.enums.SexoEnum;
 
 import jakarta.validation.constraints.Email;
@@ -41,9 +40,6 @@ public record RegistrarRequestDto (
     )
     String password,
 
-    @NotNull(message = "El rol es obligatorio")
-    RolEnum rol,
-    
     @NotNull(message = "El sexo es obligatorio")
     SexoEnum sexo
 

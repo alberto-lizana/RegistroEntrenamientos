@@ -1,7 +1,9 @@
 package com.registro.entrenamientos.controller;
 
-import java.util.List;
-
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.registro.entrenamientos.dto.ModificarApmatUsuarioRequestDto;
@@ -19,6 +22,7 @@ import com.registro.entrenamientos.dto.ModificarFechaNacimientoUsuarioRequestDto
 import com.registro.entrenamientos.dto.ModificarNombreUsuarioRequestDto;
 import com.registro.entrenamientos.dto.ModificarPasswordUsuarioRequestDto;
 import com.registro.entrenamientos.dto.ModificarPlanUsuarioRequestDto;
+import com.registro.entrenamientos.dto.ModificarRolUsuarioRequestDto;
 import com.registro.entrenamientos.dto.ModificarSexoUsuarioRequestDto;
 import com.registro.entrenamientos.dto.RegistrarRequestDto;
 import com.registro.entrenamientos.dto.UsuarioResponseDto;
@@ -45,15 +49,26 @@ public class UsuarioController {
     }
 
     @GetMapping("/obtener-todos")
-    public ResponseEntity<List<UsuarioResponseDto>> obtenerTodos() {
-        log.info("Solicitud recibida para obtener todos los usuarios con sus datos");
-        return ResponseEntity.ok().body(usuarioService.obtenerTodos());
+    public ResponseEntity<Page<UsuarioResponseDto>> obtenerTodos(
+        @PageableDefault(
+            page = 0,
+            size = 5,
+            sort = "id",
+            direction = Sort.Direction.ASC
+        ) Pageable pageable) {
+        return ResponseEntity.ok(usuarioService.obtenerTodos(pageable));
     }
 
     @GetMapping("/obtener-{id}")
     ResponseEntity<UsuarioResponseDto> obtenerPorId(@PathVariable Long id){
         log.info("Solicitud recibida para obtener los datos de un usuario");
         return ResponseEntity.ok().body(usuarioService.obtenerPorId(id));
+    }
+
+    @GetMapping("/obtener-por-email")
+    ResponseEntity<UsuarioResponseDto> obtenerPorEmail(@RequestParam String email){
+        log.info("Solicitud recibida para obtener los datos de un usuario");
+        return ResponseEntity.ok().body(usuarioService.obtenerPorEmail(email));
     }
 
     @PostMapping("/registrar")
@@ -92,10 +107,16 @@ public class UsuarioController {
         return ResponseEntity.ok().body(usuarioService.modificarPassword(dto));
     }
 
-    @PatchMapping("/modificar-plan")
-    public ResponseEntity<UsuarioResponseDto> modificarPlan(@Valid @RequestBody ModificarPlanUsuarioRequestDto dto){
-        log.info("Solicitud recibida para modificar el plan del usuario consultate");
-        return ResponseEntity.ok().body(usuarioService.modificarPlan(dto));
+    @PatchMapping("/admin/modificar-rol")
+    public ResponseEntity<UsuarioResponseDto> modificarRolPorId(@Valid @RequestBody ModificarRolUsuarioRequestDto dto) {
+        log.info("Solicitud recibida para modificar el rol de un usuario");
+        return ResponseEntity.ok().body(usuarioService.modificarRolPorId(dto));
+    }
+
+    @PatchMapping("/admin/modificar-plan")
+    public ResponseEntity<UsuarioResponseDto> modificarPlanPorId(@Valid @RequestBody ModificarPlanUsuarioRequestDto dto) {
+        log.info("Solicitud recibida para modificar el plan de un usuario");
+        return ResponseEntity.ok().body(usuarioService.modificarPlanPorId(dto));
     }
 
     @PatchMapping("/modificar-sexo")

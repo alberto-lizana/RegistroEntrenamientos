@@ -6,6 +6,7 @@ import java.util.Date;
 import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -93,8 +94,15 @@ public class JwtService {
     public String generarToken(UserDetails userDetails) {
         return Jwts.builder()
                 .subject(userDetails.getUsername())
+
+                // Agregamos los roles del usuario al JWT
+                .claim("authorities", userDetails.getAuthorities()
+                        .stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .toList())
+
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + (1000 * 60 * 60) * 12)) // Token durará 12 horas
+                .expiration(new Date(System.currentTimeMillis() + (1000 * 60 * 60)))
                 .signWith(this.key)
                 .compact();
     }
