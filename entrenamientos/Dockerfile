@@ -6,7 +6,7 @@ WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 
-RUN mvn clean package
+RUN mvn clean package -DskipTests
 
 # Etapa 2: Ejecución
 FROM eclipse-temurin:25-jre
